@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <script src="https://SortableJS.github.io/Sortable/Sortable.js"></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', sans-serif;
+            background: radial-gradient(circle, #2c3e50 0%, #000000 100%);
+            color: white;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            user-select: none;
+        }
+
+        .status-bar {
+            height: 25px;
+            padding: 5px 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 12px;
+            background: rgba(0,0,0,0.4);
+            backdrop-filter: blur(5px);
+        }
+
+        .phone-id-badge {
+            font-size: 10px;
+            background: rgba(255, 255, 255, 0.15);
+            padding: 2px 6px;
+            border-radius: 4px;
+            color: #7289da;
+            font-weight: bold;
+        }
+
+        .desktop {
+            flex: 1;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+            grid-gap: 10px;
+            padding: 15px;
+            align-content: start;
+        }
+
+        /* --- АНИМАЦИИ ИКОНОК --- */
+        .app {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .app:hover {
+            transform: scale(1.1);
+            filter: brightness(1.2);
+        }
+
+        .app:active {
+            transform: scale(0.9);
+        }
+
+        .app-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 14px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 30px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.4);
+            pointer-events: none;
+        }
+
+        .app-name {
+            margin-top: 8px;
+            font-size: 12px;
+            text-shadow: 1px 1px 2px black;
+            pointer-events: none;
+        }
+
+        .sortable-drag {
+            opacity: 0.8;
+            transform: rotate(5deg) scale(1.1);
+        }
+
+        .sortable-ghost {
+            opacity: 0.2;
+            background: rgba(255,255,255,0.1);
+            border-radius: 15px;
+        }
+
+        .home-bar {
+            height: 40px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .home-button {
+            width: 80px;
+            height: 4px;
+            background: rgba(255,255,255,0.4);
+            border-radius: 10px;
+            transition: 0.2s;
+            cursor: pointer;
+        }
+        .home-button:hover { background: white; }
+    </style>
+</head>
+<body>
+
+<div class="status-bar">
+    <div id="clock">12:00</div>
+    <div id="phone-id-display" class="phone-id-badge">ID: #0</div>
+    <div>📶 🔋</div>
+</div>
+
+<div class="desktop" id="app-grid">
+    <div class="app" data-id="1" 
+        onmouseenter="playSound('hover')" 
+        onmousedown="playSound('click')" 
+        onclick="sendAction('emotes')">
+        <div class="app-icon" style="background: #f1c40f;">🎭</div>
+        <div class="app-name">Эмоции</div>
+    </div>
+    <div class="app" data-id="2" 
+        onmouseenter="playSound('hover')" 
+        onmousedown="playSound('click')" 
+        onclick="sendAction('camera')">
+        <div class="app-icon" style="background: #3498db;">📷</div>
+        <div class="app-name">Камера</div>
+    </div>
+    <div class="app" data-id="3" 
+        onmouseenter="playSound('hover')" 
+        onmousedown="playSound('click')" 
+        onclick="sendAction('chat')">
+        <div class="app-icon" style="background: #2ecc71;">💬</div>
+        <div class="app-name">Чат</div>
+    </div>
+</div>
+
+<div class="home-bar">
+    <div class="home-button" onclick="sendAction('home')"></div>
+</div>
+
+<script>
+    // --- Получение параметров из URL (?id=PHONEID) ---
+    const urlParams = new URLSearchParams(window.location.search);
+    const phoneID = urlParams.get('id') || '0';
+    
+    document.getElementById('phone-id-display').innerText = 'ID: #' + phoneID;
+
+    function playSound(type) {
+        if (window.gmod) {
+            gmod.PlayInterfaceSound(type);
+        }
+    }
+
+    function sendAction(a) { 
+        if(window.gmod) {
+            gmod.Action(a); 
+        }
+    }
+
+    function updateClock() {
+        const now = new Date();
+        document.getElementById('clock').innerText = now.getHours().toString().padStart(2, '0') + ":" + now.getMinutes().toString().padStart(2, '0');
+    }
+    setInterval(updateClock, 1000); 
+    updateClock();
+
+    // Настройка Sortable для перетаскивания иконок
+    const grid = document.getElementById('app-grid');
+    Sortable.create(grid, {
+        animation: 200,
+        ghostClass: 'sortable-ghost',
+        dragClass: 'sortable-drag',
+        forceFallback: true, // Имитация перетаскивания для CEF/GMod
+        onStart: function() { document.body.style.cursor = 'grabbing'; },
+        onEnd: function() { document.body.style.cursor = 'default'; }
+    });
+</script>
+
+</body>
+</html>
